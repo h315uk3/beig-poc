@@ -1,0 +1,74 @@
+name: Quality Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/rules/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'CLAUDE.md'
+      - 'CONTRIBUTING.md'
+      - 'mise.toml'
+      - 'ruff.toml'
+      - '.vscode/**'
+      - '.github/copilot-instructions.md'
+      - '**.schema.json'
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/rules/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'CLAUDE.md'
+      - 'CONTRIBUTING.md'
+      - 'mise.toml'
+      - 'ruff.toml'
+      - '.vscode/**'
+      - '.github/copilot-instructions.md'
+      - '**.schema.json'
+
+jobs:
+  check:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local/share/uv
+            .venv
+          key: python-deps-${{ runner.os }}-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
+          restore-keys: |
+            python-deps-${{ runner.os }}-
+
+      - name: Install dependencies with mise
+        run: mise install
+
+      - name: Check code formatting (ruff)
+        run: mise run format:check
+
+      - name: Run linter (ruff)
+        run: mise run lint
+
+      - name: Run type checker (pyright)
+        run: mise run typecheck
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "::notice::✓ All checks completed"

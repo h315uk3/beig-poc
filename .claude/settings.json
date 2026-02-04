@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mise run lint*)",
+      "Bash(mise run typecheck*)",
+      "Bash(mise run format*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr list*)",
+      "Bash(gh issue view*)",
+      "Bash(gh issue list*)"
+    ]
+  }
+}

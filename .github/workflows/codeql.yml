@@ -1,0 +1,68 @@
+name: CodeQL Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/rules/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'CLAUDE.md'
+      - 'CONTRIBUTING.md'
+      - 'mise.toml'
+      - 'ruff.toml'
+      - '.vscode/**'
+      - '.github/copilot-instructions.md'
+      - '**.schema.json'
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/rules/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'CLAUDE.md'
+      - 'CONTRIBUTING.md'
+      - 'mise.toml'
+      - 'ruff.toml'
+      - '.vscode/**'
+      - '.github/copilot-instructions.md'
+      - '**.schema.json'
+  schedule:
+    # Run CodeQL analysis on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  analyze:
+    name: Analyze Python Code
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"

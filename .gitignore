@@ -1,0 +1,57 @@
+# Claude Code local settings
+.claude/settings.local.json
+.claude/CLAUDE.md
+.claude/output-styles/
+
+# Local tools directory
+.tools/
+
+# Development documentation (internal use only)
+doc/
+docs/
+
+# Node modules and build artifacts
+node_modules/
+dist/
+build/
+*.log
+
+# Test coverage reports
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.ruff_cache/
+*.cover
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.venv/
+venv/
+ENV/
+env/
+.Python
+
+# Rust
+target/
+Cargo.lock
+*.rs.bk
+*.pdb
+
+# Recording files (asciinema)
+*.cast
+*.cast.bak
+
+# OS-specific files
+.DS_Store
+Thumbs.db
