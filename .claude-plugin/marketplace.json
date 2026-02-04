@@ -1,0 +1,28 @@
+{
+  "name": "beig-poc",
+  "owner": {
+    "name": "h315uk3"
+  },
+  "metadata": {
+    "description": "Proof of Concept for with-me theory implementation",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "with-me",
+      "description": "You work with me (Claude) - I guide your workflow and suggest next actions.",
+      "source": "./plugins/with-me",
+      "category": "collaboration",
+      "strict": false,
+      "homepage": "https://github.com/h315uk3/beig-poc"
+    },
+    {
+      "name": "lunch-decision",
+      "description": "Adaptive lunch decision assistant - helps you decide what to eat through intelligent questioning",
+      "source": "./plugins/lunch-decision",
+      "category": "lifestyle",
+      "strict": false,
+      "homepage": "https://github.com/h315uk3/beig-poc"
+    }
+  ]
+}

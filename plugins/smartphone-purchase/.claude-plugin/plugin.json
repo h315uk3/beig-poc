@@ -1,0 +1,11 @@
+{
+  "name": "smartphone-purchase",
+  "version": "0.1.0",
+  "description": "Smartphone purchase decision assistant - helps you choose the right phone",
+  "author": {
+    "name": "h315uk3"
+  },
+  "homepage": "https://github.com/h315uk3/beig-poc",
+  "repository": "https://github.com/h315uk3/beig-poc",
+  "license": "AGPL-3.0"
+}

@@ -1,0 +1,443 @@
+{
+  "dimensions": {
+    "mood": {
+      "id": "mood",
+      "name": "Mood & Context",
+      "short_name": "Mood",
+      "description": "Current mood, situation, and context for lunch",
+      "importance": 1.0,
+      "prerequisites": [],
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "current mood and energy level",
+        "weather and temperature",
+        "dining companions",
+        "schedule and time pressure",
+        "recent eating patterns"
+      ],
+      "question_guidelines": {
+        "when_high_entropy": "Ask broad questions about how they're feeling and what kind of experience they want.",
+        "when_converging": "Ask specific questions to validate their mood and context.",
+        "follow_up_triggers": [
+          "mentioned feeling",
+          "mentioned weather",
+          "mentioned company",
+          "mentioned time"
+        ]
+      },
+      "hypotheses": {
+        "comfort": {
+          "id": "comfort",
+          "name": "Comfort Seeking",
+          "description": "Looking for familiar, comforting food that provides emotional satisfaction",
+          "focus_areas": [
+            "familiar flavors",
+            "nostalgic dishes",
+            "warm and satisfying",
+            "stress relief through food",
+            "cozy atmosphere"
+          ]
+        },
+        "adventure": {
+          "id": "adventure",
+          "name": "Adventurous",
+          "description": "Want to try something new, exciting, or different",
+          "focus_areas": [
+            "novel experiences",
+            "exotic cuisines",
+            "unique flavors",
+            "culinary exploration",
+            "social media worthy"
+          ]
+        },
+        "practical": {
+          "id": "practical",
+          "name": "Practical",
+          "description": "Focused on efficiency, convenience, and getting back to work",
+          "focus_areas": [
+            "quick service",
+            "convenient location",
+            "easy to eat",
+            "minimal wait time",
+            "fuel for afternoon"
+          ]
+        },
+        "social": {
+          "id": "social",
+          "name": "Social",
+          "description": "Prioritizing the social experience and sharing with others",
+          "focus_areas": [
+            "good for conversation",
+            "shareable dishes",
+            "pleasant atmosphere",
+            "group-friendly",
+            "memorable experience"
+          ]
+        }
+      }
+    },
+    "preferences": {
+      "id": "preferences",
+      "name": "Taste Preferences",
+      "short_name": "Taste",
+      "description": "Flavor profiles, cuisine types, and food preferences",
+      "importance": 0.9,
+      "prerequisites": [
+        "mood"
+      ],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "cuisine type preferences",
+        "flavor profiles (spicy, savory, sweet)",
+        "protein preferences",
+        "carb preferences",
+        "texture preferences"
+      ],
+      "question_guidelines": {
+        "when_high_entropy": "Ask about general taste preferences and what sounds good today.",
+        "when_converging": "Ask specific questions about particular cuisines or flavors.",
+        "follow_up_triggers": [
+          "mentioned cuisine",
+          "mentioned flavor",
+          "mentioned dish",
+          "mentioned craving"
+        ]
+      },
+      "hypotheses": {
+        "asian": {
+          "id": "asian",
+          "name": "Asian Cuisine",
+          "description": "Japanese, Chinese, Korean, Thai, Vietnamese, or other Asian food",
+          "focus_areas": [
+            "rice or noodle based",
+            "umami flavors",
+            "varied spice levels",
+            "light to hearty options",
+            "soup and bowl dishes"
+          ]
+        },
+        "western": {
+          "id": "western",
+          "name": "Western Cuisine",
+          "description": "American, Italian, French, or other Western food",
+          "focus_areas": [
+            "bread and pasta dishes",
+            "burgers and sandwiches",
+            "pizza and baked goods",
+            "meat-centric dishes",
+            "comfort food classics"
+          ]
+        },
+        "light": {
+          "id": "light",
+          "name": "Light & Fresh",
+          "description": "Salads, grain bowls, wraps, and lighter options",
+          "focus_areas": [
+            "fresh vegetables",
+            "lean proteins",
+            "bright flavors",
+            "health-conscious",
+            "easy to digest"
+          ]
+        },
+        "hearty": {
+          "id": "hearty",
+          "name": "Hearty & Filling",
+          "description": "Substantial, filling meals with rich flavors",
+          "focus_areas": [
+            "large portions",
+            "rich sauces",
+            "multiple components",
+            "satisfying and heavy",
+            "long-lasting fullness"
+          ]
+        }
+      }
+    },
+    "constraints": {
+      "id": "constraints",
+      "name": "Constraints",
+      "short_name": "Limits",
+      "description": "Budget, time, location, and practical limitations",
+      "importance": 0.8,
+      "supports_multi_select": true,
+      "prerequisites": [
+        "mood"
+      ],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "budget limitations",
+        "time constraints",
+        "location accessibility",
+        "transportation",
+        "operating hours"
+      ],
+      "question_guidelines": {
+        "when_high_entropy": "Ask about practical constraints that might limit choices.",
+        "when_converging": "Ask specific questions about budget range or time availability.",
+        "follow_up_triggers": [
+          "mentioned price",
+          "mentioned time",
+          "mentioned location",
+          "mentioned distance"
+        ]
+      },
+      "hypotheses": {
+        "budget_conscious": {
+          "id": "budget_conscious",
+          "name": "Budget Conscious",
+          "description": "Looking for affordable options, under $10-15",
+          "focus_areas": [
+            "value for money",
+            "lunch specials",
+            "fast food or casual",
+            "simple preparations",
+            "cost-effective portions"
+          ]
+        },
+        "time_limited": {
+          "id": "time_limited",
+          "name": "Time Limited",
+          "description": "Need quick service, under 30 minutes total",
+          "focus_areas": [
+            "fast service",
+            "takeout friendly",
+            "pre-made options",
+            "nearby locations",
+            "efficient ordering"
+          ]
+        },
+        "location_bound": {
+          "id": "location_bound",
+          "name": "Location Limited",
+          "description": "Restricted to nearby area or specific locations",
+          "focus_areas": [
+            "walking distance",
+            "office area options",
+            "delivery available",
+            "familiar spots",
+            "accessible locations"
+          ]
+        },
+        "flexible": {
+          "id": "flexible",
+          "name": "Flexible",
+          "description": "Few constraints, open to various options",
+          "focus_areas": [
+            "willing to travel",
+            "time available",
+            "budget not a concern",
+            "open to suggestions",
+            "prioritize quality"
+          ]
+        }
+      }
+    },
+    "health": {
+      "id": "health",
+      "name": "Health Considerations",
+      "short_name": "Health",
+      "description": "Nutritional needs, dietary restrictions, and health goals",
+      "importance": 0.7,
+      "supports_multi_select": true,
+      "prerequisites": [
+        "preferences"
+      ],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "dietary restrictions",
+        "allergies and intolerances",
+        "nutritional goals",
+        "calorie considerations",
+        "wellness priorities"
+      ],
+      "question_guidelines": {
+        "when_high_entropy": "Ask about dietary restrictions and health priorities.",
+        "when_converging": "Ask specific questions about nutritional preferences or restrictions.",
+        "follow_up_triggers": [
+          "mentioned diet",
+          "mentioned health",
+          "mentioned allergy",
+          "mentioned calories"
+        ]
+      },
+      "hypotheses": {
+        "unrestricted": {
+          "id": "unrestricted",
+          "name": "No Restrictions",
+          "description": "No dietary restrictions or health concerns",
+          "focus_areas": [
+            "open to all foods",
+            "no allergies",
+            "not tracking nutrition",
+            "flexible choices",
+            "enjoyment focused"
+          ]
+        },
+        "vegetarian_vegan": {
+          "id": "vegetarian_vegan",
+          "name": "Vegetarian/Vegan",
+          "description": "Plant-based diet preferences or requirements",
+          "focus_areas": [
+            "no meat or animal products",
+            "plant-based proteins",
+            "vegan-friendly options",
+            "ethical considerations",
+            "vegetable-forward dishes"
+          ]
+        },
+        "low_carb": {
+          "id": "low_carb",
+          "name": "Low Carb/Keto",
+          "description": "Limiting carbohydrates for health or weight management",
+          "focus_areas": [
+            "minimal bread/rice/pasta",
+            "protein and fat focus",
+            "sugar avoidance",
+            "keto-friendly options",
+            "vegetable sides"
+          ]
+        },
+        "balanced": {
+          "id": "balanced",
+          "name": "Balanced Nutrition",
+          "description": "Seeking nutritionally balanced, wholesome meals",
+          "focus_areas": [
+            "protein, carbs, veggies",
+            "moderate portions",
+            "whole foods",
+            "nutrient density",
+            "mindful eating"
+          ]
+        }
+      }
+    },
+    "decision_criteria": {
+      "id": "decision_criteria",
+      "name": "Decision Criteria",
+      "short_name": "Priority",
+      "description": "What matters most in making the final decision",
+      "importance": 0.6,
+      "prerequisites": [
+        "preferences",
+        "constraints"
+      ],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "primary decision factor",
+        "trade-off priorities",
+        "deal breakers",
+        "must-haves",
+        "satisfaction metrics"
+      ],
+      "question_guidelines": {
+        "when_high_entropy": "Ask what's most important in making a good lunch choice today.",
+        "when_converging": "Ask about specific trade-offs and priorities.",
+        "follow_up_triggers": [
+          "mentioned priority",
+          "mentioned important",
+          "mentioned must",
+          "mentioned prefer"
+        ]
+      },
+      "hypotheses": {
+        "taste_first": {
+          "id": "taste_first",
+          "name": "Taste First",
+          "description": "Prioritize deliciousness above all else",
+          "focus_areas": [
+            "flavor quality",
+            "culinary excellence",
+            "taste satisfaction",
+            "food experience",
+            "memorable flavors"
+          ]
+        },
+        "value_oriented": {
+          "id": "value_oriented",
+          "name": "Value Oriented",
+          "description": "Best bang for buck, portion size, and satisfaction per dollar",
+          "focus_areas": [
+            "price-to-quality ratio",
+            "portion generosity",
+            "leftover potential",
+            "satisfaction per dollar",
+            "economical choices"
+          ]
+        },
+        "efficiency_focused": {
+          "id": "efficiency_focused",
+          "name": "Efficiency Focused",
+          "description": "Speed, convenience, and minimal disruption",
+          "focus_areas": [
+            "time saved",
+            "easy ordering",
+            "quick consumption",
+            "minimal cleanup",
+            "back to work fast"
+          ]
+        },
+        "experience_driven": {
+          "id": "experience_driven",
+          "name": "Experience Driven",
+          "description": "Overall experience, atmosphere, and enjoyment",
+          "focus_areas": [
+            "dining atmosphere",
+            "service quality",
+            "food presentation",
+            "social value",
+            "memorable moments"
+          ]
+        }
+      }
+    }
+  },
+  "dag": {
+    "nodes": [
+      "mood",
+      "preferences",
+      "constraints",
+      "health",
+      "decision_criteria"
+    ],
+    "edges": [
+      {
+        "from": "mood",
+        "to": "preferences"
+      },
+      {
+        "from": "mood",
+        "to": "constraints"
+      },
+      {
+        "from": "preferences",
+        "to": "health"
+      },
+      {
+        "from": "preferences",
+        "to": "decision_criteria"
+      },
+      {
+        "from": "constraints",
+        "to": "decision_criteria"
+      }
+    ]
+  },
+  "session_config": {
+    "initial_entropy": 2.0,
+    "convergence_threshold": 0.3,
+    "max_questions": 20,
+    "min_questions": 5,
+    "priority_order": [
+      "mood",
+      "preferences",
+      "constraints",
+      "health",
+      "decision_criteria"
+    ]
+  }
+}

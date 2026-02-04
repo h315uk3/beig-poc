@@ -1,0 +1,11 @@
+{
+  "name": "lunch-decision",
+  "version": "0.1.0",
+  "description": "Adaptive lunch decision assistant - helps you decide what to eat through intelligent questioning",
+  "author": {
+    "name": "h315uk3"
+  },
+  "homepage": "https://github.com/h315uk3/beig-poc",
+  "repository": "https://github.com/h315uk3/beig-poc",
+  "license": "AGPL-3.0"
+}

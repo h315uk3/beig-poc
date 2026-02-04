@@ -1,0 +1,61 @@
+{
+  "dimensions": {
+    "usage": {"id": "usage", "name": "Primary Usage", "short_name": "Usage", "description": "How you'll mainly use the smartphone", "importance": 1.0, "prerequisites": [], "convergence_threshold": 0.3, "focus_areas": ["primary activities", "daily tasks", "critical features", "usage patterns", "intensity"],
+      "hypotheses": {
+        "productivity": {"id": "productivity", "name": "Productivity", "description": "Work, email, documents, multitasking", "focus_areas": ["business apps", "multitasking", "large screen", "keyboard", "productivity tools"]},
+        "media": {"id": "media", "name": "Media Consumption", "description": "Video, music, social media, entertainment", "focus_areas": ["screen quality", "speakers", "streaming", "social apps", "battery life"]},
+        "photography": {"id": "photography", "name": "Photography", "description": "Camera quality is top priority", "focus_areas": ["camera specs", "image quality", "video recording", "low light", "editing"]},
+        "gaming": {"id": "gaming", "name": "Gaming", "description": "Mobile gaming performance", "focus_areas": ["GPU", "refresh rate", "cooling", "touch response", "battery"]}
+      }
+    },
+    "specs": {"id": "specs", "name": "Specification Priorities", "short_name": "Specs", "description": "Technical specifications that matter most", "importance": 0.9, "prerequisites": ["usage"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["processor", "RAM", "storage", "camera", "battery"],
+      "hypotheses": {
+        "performance": {"id": "performance", "name": "Performance", "description": "Fast processor, lots of RAM", "focus_areas": ["flagship chipset", "8GB+ RAM", "speed", "multitasking", "future-proof"]},
+        "camera": {"id": "camera", "name": "Camera", "description": "Excellent camera system", "focus_areas": ["multi-lens", "high MP", "OIS", "night mode", "video quality"]},
+        "battery": {"id": "battery", "name": "Battery Life", "description": "Long-lasting battery", "focus_areas": ["large capacity", "all-day use", "fast charging", "power efficiency", "wireless charging"]},
+        "storage": {"id": "storage", "name": "Storage", "description": "Large internal storage", "focus_areas": ["256GB+", "expandable", "cloud", "file management", "media storage"]}
+      }
+    },
+    "budget": {"id": "budget", "name": "Budget Range", "short_name": "Budget", "description": "Price range you're comfortable with", "importance": 0.8, "prerequisites": ["usage"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["total cost", "value", "payment options", "resale value", "TCO"],
+      "hypotheses": {
+        "flagship": {"id": "flagship", "name": "Flagship ($800+)", "description": "Premium, latest technology", "focus_areas": ["cutting edge", "premium materials", "best specs", "status", "longevity"]},
+        "midrange": {"id": "midrange", "name": "Mid-Range ($400-800)", "description": "Good balance of features and price", "focus_areas": ["good specs", "value", "practical", "reliable", "mainstream"]},
+        "budget": {"id": "budget", "name": "Budget ($200-400)", "description": "Basic functionality, affordable", "focus_areas": ["essential features", "affordability", "good enough", "entry level", "cost-effective"]},
+        "used": {"id": "used", "name": "Used/Refurbished", "description": "Previously owned, discounted", "focus_areas": ["savings", "value", "certified refurb", "warranty", "recent model"]}
+      }
+    },
+    "preferences": {"id": "preferences", "name": "Brand & Style Preferences", "short_name": "Style", "description": "Brand loyalty, ecosystem, design preferences", "importance": 0.7, "prerequisites": ["budget"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["ecosystem", "brand", "OS preference", "design", "size"],
+      "hypotheses": {
+        "ios": {"id": "ios", "name": "iOS Ecosystem", "description": "Apple devices, seamless integration", "focus_areas": ["iPhone", "ecosystem lock-in", "simplicity", "privacy", "premium"]},
+        "android_flagship": {"id": "android_flagship", "name": "Android Flagship", "description": "Samsung, Google Pixel, premium Android", "focus_areas": ["customization", "features", "variety", "openness", "innovation"]},
+        "android_value": {"id": "android_value", "name": "Android Value", "description": "Xiaomi, OnePlus, value brands", "focus_areas": ["price/performance", "features", "specs", "customization", "affordability"]},
+        "agnostic": {"id": "agnostic", "name": "Platform Agnostic", "description": "Don't care about ecosystem", "focus_areas": ["best specs", "features", "price", "practical choice", "flexibility"]}
+      }
+    },
+    "priorities": {"id": "priorities", "name": "Decision Priorities", "short_name": "Priority", "description": "What matters most in your final decision", "importance": 0.6, "prerequisites": ["specs", "budget"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["deal breakers", "must-haves", "trade-offs", "timeline", "confidence"],
+      "hypotheses": {
+        "latest": {"id": "latest", "name": "Latest Technology", "description": "Want newest model, cutting edge", "focus_areas": ["just released", "innovation", "future-proof", "bragging rights", "early adopter"]},
+        "proven": {"id": "proven", "name": "Proven Reliability", "description": "Established model with reviews", "focus_areas": ["reviews", "reliability", "known issues", "support", "track record"]},
+        "value": {"id": "value", "name": "Best Value", "description": "Most features per dollar", "focus_areas": ["bang for buck", "deals", "promotions", "comparison shopping", "rational choice"]},
+        "brand": {"id": "brand", "name": "Brand Loyalty", "description": "Stick with trusted brand", "focus_areas": ["familiar", "ecosystem", "trust", "support", "consistency"]}
+      }
+    }
+  },
+  "dag": {
+    "nodes": ["usage", "specs", "budget", "preferences", "priorities"],
+    "edges": [
+      {"from": "usage", "to": "specs"},
+      {"from": "usage", "to": "budget"},
+      {"from": "budget", "to": "preferences"},
+      {"from": "specs", "to": "priorities"},
+      {"from": "budget", "to": "priorities"}
+    ]
+  },
+  "session_config": {
+    "initial_entropy": 2.0,
+    "convergence_threshold": 0.3,
+    "max_questions": 15,
+    "min_questions": 5,
+    "priority_order": ["usage", "specs", "budget", "preferences", "priorities"]
+  }
+}

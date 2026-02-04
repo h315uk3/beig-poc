@@ -1,0 +1,574 @@
+#!/usr/bin/env python3
+"""
+CLI for good-question session management.
+
+Provides JSON output for Claude Code to consume:
+- init: Initialize new session
+- next-question: Select next question
+- update: Update beliefs with answer
+- status: Display current state
+- complete: Finalize session
+
+Session state is persisted to .claude/with_me/sessions/<session_id>.json
+"""
+
+import argparse
+import json
+import math
+import sys
+from pathlib import Path
+from typing import Any
+
+from with_me.lib.dimension_belief import HypothesisSet
+from with_me.lib.session_orchestrator import SessionOrchestrator
+
+# Convergence thresholds
+DIMENSION_RESOLVED_THRESHOLD = (
+    0.3  # Entropy threshold for considering a dimension resolved
+)
+
+# Likelihood validation constants
+LIKELIHOOD_EPSILON = 1e-9  # Minimum non-zero likelihood value
+
+
+def validate_and_normalize_likelihoods(
+    hs: HypothesisSet, likelihoods_in: dict[str, Any]
+) -> dict[str, float]:
+    """Validate and normalize likelihoods for Bayesian update.
+
+    Handles common input errors from LLM-generated likelihoods:
+    - Missing hypotheses → treated as 0.0
+    - Negative values → clamped to 0.0
+    - All zeros → fallback to uniform distribution
+    - Otherwise → normalized to sum=1.0
+    - Extreme values → clamped to epsilon
+
+    Args:
+        hs: HypothesisSet containing the hypotheses
+        likelihoods_in: Raw likelihood dict from LLM
+
+    Returns:
+        Normalized likelihood dict (sum=1.0, all non-negative)
+
+    Examples:
+        >>> hs = HypothesisSet("test", ["a", "b", "c"])
+        >>> # Normal case
+        >>> validate_and_normalize_likelihoods(hs, {"a": 0.5, "b": 0.3, "c": 0.2})
+        {'a': 0.5, 'b': 0.3, 'c': 0.2}
+
+        >>> # Missing keys → filled with 0.0
+        >>> result = validate_and_normalize_likelihoods(hs, {"a": 1.0})
+        >>> round(result["a"], 2)
+        1.0
+        >>> round(result["b"], 2)
+        0.0
+
+        >>> # Negative values → clamped to 0.0
+        >>> result = validate_and_normalize_likelihoods(
+        ...     hs, {"a": 0.5, "b": -0.1, "c": 0.6}
+        ... )
+        >>> result["b"]
+        0.0
+
+        >>> # All zeros → uniform fallback
+        >>> result = validate_and_normalize_likelihoods(
+        ...     hs, {"a": 0.0, "b": 0.0, "c": 0.0}
+        ... )
+        >>> round(result["a"], 2)
+        0.33
+
+        >>> # Unnormalized → normalized
+        >>> result = validate_and_normalize_likelihoods(
+        ...     hs, {"a": 2.0, "b": 3.0, "c": 5.0}
+        ... )
+        >>> round(result["a"], 2)
+        0.2
+        >>> round(result["c"], 2)
+        0.5
+    """
+    vals = {}
+    for h in hs.hypotheses:
+        v = float(likelihoods_in.get(h, 0.0))
+        if v < 0:
+            v = 0.0
+        # Clamp extremely small values to epsilon
+        if 0 < v < LIKELIHOOD_EPSILON:
+            v = LIKELIHOOD_EPSILON
+        vals[h] = v
+
+    s = sum(vals.values())
+    if s <= 0.0:
+        # Uniform fallback when all likelihoods are zero
+        u = 1.0 / len(hs.hypotheses) if hs.hypotheses else 1.0
+        return {h: u for h in hs.hypotheses}
+
+    # Normalize to sum=1.0
+    return {h: v / s for h, v in vals.items()}
+
+
+def get_session_dir() -> Path:
+    """Get session persistence directory.
+
+    Searches upward from current directory for .claude/ directory.
+    Excludes home directory's ~/.claude/ (personal config, not workspace).
+    Falls back to project-local storage if no workspace found.
+    """
+    # Look for .claude directory in current or parent directories
+    current = Path.cwd()
+    home = Path.home()
+
+    # Search upward, but stop at home directory
+    # Don't use ~/.claude/ (personal config, not workspace)
+    while current not in (current.parent, home):
+        claude_dir = current / ".claude" / "with_me" / "sessions"
+        if claude_dir.parent.parent.exists():
+            claude_dir.mkdir(parents=True, exist_ok=True)
+            return claude_dir
+        current = current.parent
+
+    # Fallback: Use .with_me in current directory (no workspace found)
+    # This avoids polluting ~/.claude/ when run outside a workspace
+    fallback = Path.cwd() / ".with_me" / "sessions"
+    fallback.mkdir(parents=True, exist_ok=True)
+    return fallback
+
+
+def save_session_state(session_id: str, orchestrator: SessionOrchestrator) -> None:
+    """Save session state to disk."""
+    session_file = get_session_dir() / f"{session_id}.json"
+
+    state = {
+        "session_id": orchestrator.session_id,
+        "beliefs": {k: v.to_dict() for k, v in orchestrator.beliefs.items()},
+        "question_history": orchestrator.question_history,
+        "question_count": orchestrator.question_count,
+    }
+
+    with open(session_file, "w", encoding="utf-8") as f:
+        json.dump(state, f, indent=2, ensure_ascii=False)
+
+
+def load_session_state(session_id: str) -> SessionOrchestrator:
+    """Load session state from disk."""
+    session_file = get_session_dir() / f"{session_id}.json"
+
+    if not session_file.exists():
+        print(
+            json.dumps(
+                {"error": f"Session not found: {session_id}"}, ensure_ascii=False
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    with open(session_file) as f:
+        state = json.load(f)
+
+    # Reconstruct orchestrator
+    orch = SessionOrchestrator()
+    orch.session_id = state["session_id"]
+    orch.beliefs = {k: HypothesisSet.from_dict(v) for k, v in state["beliefs"].items()}
+    orch.question_history = state["question_history"]
+    orch.question_count = state["question_count"]
+
+    return orch
+
+
+def cmd_init(args: argparse.Namespace) -> None:
+    """Initialize new session."""
+    orch = SessionOrchestrator()
+    session_id = orch.initialize_session()
+
+    # Save initial state
+    save_session_state(session_id, orch)
+
+    # Output JSON
+    print(
+        json.dumps(
+            {
+                "session_id": session_id,
+                "status": "initialized",
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+def cmd_next_question(args: argparse.Namespace) -> None:
+    """Select next question to ask."""
+    orch = load_session_state(args.session_id)
+
+    # Check convergence first
+    if orch.check_convergence():
+        print(
+            json.dumps(
+                {
+                    "converged": True,
+                    "reason": "All dimensions converged or max questions reached",
+                },
+                ensure_ascii=False,
+            )
+        )
+        return
+
+    dimension, question = orch.select_next_question()
+
+    if dimension is None:
+        print(
+            json.dumps(
+                {
+                    "converged": True,
+                    "reason": "No accessible dimensions (all blocked by prerequisites)",
+                },
+                ensure_ascii=False,
+            )
+        )
+        return
+
+    # Get dimension metadata with detailed information for question generation
+    dim_config = orch.config["dimensions"][dimension]
+
+    # Extract hypothesis information for context
+    hypotheses_info = []
+    for hyp_id, hyp_data in dim_config.get("hypotheses", {}).items():
+        hypotheses_info.append(
+            {
+                "id": hyp_id,
+                "name": hyp_data["name"],
+                "description": hyp_data["description"],
+                "focus_areas": hyp_data["focus_areas"],
+            }
+        )
+
+    print(
+        json.dumps(
+            {
+                "converged": False,
+                "dimension": dimension,
+                "dimension_name": dim_config["name"],
+                "dimension_description": dim_config.get("description", ""),
+                "focus_areas": dim_config.get("focus_areas", []),
+                "hypotheses": hypotheses_info,
+                "question": question,
+                "supports_multi_select": dim_config.get("supports_multi_select", False),
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+def cmd_status(args: argparse.Namespace) -> None:
+    """Display current session state."""
+    orch = load_session_state(args.session_id)
+
+    state = orch.get_current_state()
+
+    # Format for display
+    output: dict[str, Any] = {
+        "session_id": state["session_id"],
+        "question_count": state["question_count"],
+        "all_converged": state["all_converged"],
+        "dimensions": {},
+    }
+
+    for dim_id, dim_data in state["dimensions"].items():
+        output["dimensions"][dim_id] = {
+            "name": dim_data["name"],
+            "entropy": round(dim_data["entropy"], 2),
+            "confidence": round(dim_data["confidence"], 2),
+            "converged": dim_data["converged"],
+            "blocked": dim_data["blocked"],
+            "blocked_by": dim_data["blocked_by"],
+            "most_likely": dim_data["most_likely"],
+        }
+
+    print(json.dumps(output, indent=2, ensure_ascii=False))
+
+
+def cmd_complete(args: argparse.Namespace) -> None:
+    """Complete session and generate summary."""
+    session_file = get_session_dir() / f"{args.session_id}.json"
+
+    if not session_file.exists():
+        print(
+            json.dumps(
+                {"error": f"Session file not found: {args.session_id}"},
+                ensure_ascii=False,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # Load session data
+    with open(session_file, encoding="utf-8") as f:
+        session_data = json.load(f)
+
+    # Calculate summary from question_history
+    question_history = session_data.get("question_history", [])
+    beliefs = session_data.get("beliefs", {})
+
+    total_questions = len(question_history)
+    total_info_gain = sum(q.get("information_gain", 0) for q in question_history)
+
+    # Calculate final clarity score (1 - normalized average entropy)
+    final_entropies = {
+        dim: belief.get("_cached_entropy", 0) for dim, belief in beliefs.items()
+    }
+    final_clarity = 1.0 - (
+        sum(final_entropies.values()) / len(final_entropies) if final_entropies else 0
+    )
+
+    # Dimensions resolved (entropy < threshold)
+    dimensions_resolved = [
+        dim
+        for dim, entropy in final_entropies.items()
+        if entropy < DIMENSION_RESOLVED_THRESHOLD
+    ]
+
+    summary = {
+        "total_questions": total_questions,
+        "avg_reward_per_question": 0,  # Not tracked in CLI workflow
+        "total_info_gain": total_info_gain,
+        "final_clarity_score": final_clarity,
+        "dimensions_resolved": dimensions_resolved,
+        "session_efficiency": total_info_gain / total_questions
+        if total_questions > 0
+        else 0,
+    }
+
+    # Add completion metadata
+    session_data["completed"] = True
+    session_data["completed_at"] = args.session_id  # ISO timestamp
+    session_data["summary"] = summary
+
+    # Save updated session with completion status
+    with open(session_file, "w", encoding="utf-8") as f:
+        json.dump(session_data, f, indent=2, ensure_ascii=False)
+
+    print(
+        json.dumps(
+            {
+                "session_id": args.session_id,
+                "total_questions": total_questions,
+                "total_info_gain": round(total_info_gain, 2),
+                "status": "completed",
+                "archived": True,
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+def cmd_evaluate_question(args: argparse.Namespace) -> None:
+    """Output question evaluation formulas and data for LLM to calculate."""
+    orch = load_session_state(args.session_id)
+
+    # Get dimension configuration
+    dim_config = orch.config["dimensions"][args.dimension]
+    hs = orch.beliefs[args.dimension]
+
+    # Calculate current entropy for importance
+    current_entropy = (
+        hs._cached_entropy
+        if hs._cached_entropy is not None
+        else math.log2(len(hs.hypotheses))
+    )
+    h_max = math.log2(len(hs.hypotheses))
+
+    # Output evaluation formulas and data
+    print(
+        json.dumps(
+            {
+                "evaluation_data": {
+                    "question": args.question,
+                    "dimension": args.dimension,
+                    "dimension_name": dim_config["name"],
+                    "current_entropy": round(current_entropy, 4),
+                    "h_max": round(h_max, 4),
+                    "importance_base": dim_config["importance"],
+                    "hypotheses": [
+                        {
+                            "id": hyp_id,
+                            "name": hyp_data["name"],
+                            "description": hyp_data["description"],
+                        }
+                        for hyp_id, hyp_data in dim_config.get("hypotheses", {}).items()
+                    ],
+                    "posterior": hs.posterior,
+                },
+                "formulas": {
+                    "clarity": {
+                        "description": "Evaluate question clarity based on linguistic features",
+                        "criteria": [
+                            "Question mark present: +0.3",
+                            "Appropriate length (10-30 words): +0.2",
+                            "No ambiguous terms (maybe, perhaps, might): +0.2",
+                            "Single focused question (no compound or/and): +0.3",
+                        ],
+                        "scale": "0.0 (unclear) to 1.0 (perfectly clear)",
+                    },
+                    "importance": {
+                        "description": "Calculate importance based on dimension weight and uncertainty",
+                        "formula": "IMPORTANCE = importance_base * (0.5 + 0.5 * current_entropy / h_max)",
+                        "explanation": "Higher entropy (uncertainty) increases importance",
+                    },
+                    "eig": {
+                        "description": "Estimate expected information gain from this question",
+                        "approach": "Consider how well the question discriminates between hypotheses",
+                        "criteria": [
+                            "Does the question target high-probability hypotheses?",
+                            "Would different answers clearly distinguish hypotheses?",
+                            "Is the question relevant to current uncertainty?",
+                        ],
+                        "scale": "0.0 (no information) to h_max bits (maximum information)",
+                        "heuristic": "Strong discriminating questions: 0.5-1.0 bits, Weak: 0.1-0.3 bits",
+                    },
+                },
+                "instruction": (
+                    "Calculate CLARITY (0.0-1.0), IMPORTANCE (0.0-1.0), and EIG (bits) "
+                    "based on the formulas and data above. "
+                    "Then compute: REWARD = EIG + 0.1 * CLARITY + 0.05 * IMPORTANCE. "
+                    "If REWARD < 0.5, regenerate question. If REWARD >= 0.5, proceed to ask user."
+                ),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+
+
+def cmd_update_with_computation(args: argparse.Namespace) -> None:
+    """Update beliefs with complete computation chain (Phase B + C)."""
+    orch = load_session_state(args.session_id)
+
+    # Parse likelihoods from LLM
+    try:
+        likelihoods = json.loads(args.likelihoods)
+    except json.JSONDecodeError as e:
+        print(
+            json.dumps(
+                {"error": f"Invalid JSON in --likelihoods: {e}"}, ensure_ascii=False
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # Phase B: Computation chain (Python)
+    hs = orch.beliefs[args.dimension]
+
+    # Validate and normalize likelihoods to handle malformed LLM output
+    validated_likelihoods = validate_and_normalize_likelihoods(hs, likelihoods)
+
+    # B1: Entropy before
+    h_before = hs.entropy()
+
+    # B2: Bayesian update with validated likelihoods
+    hs.update(validated_likelihoods)
+
+    # B3: Entropy after
+    h_after = hs.entropy()
+
+    # B4: Information gain
+    info_gain = h_before - h_after
+
+    # Cache results for session_orchestrator methods
+    h_max = math.log2(len(hs.hypotheses))
+    hs._cached_entropy = h_after
+    hs._cached_confidence = 1.0 - (h_after / h_max) if h_max > 0 else 1.0
+
+    # Phase C: Persist to session history
+    orch.question_history.append(
+        {
+            "dimension": args.dimension,
+            "question": args.question,
+            "answer": args.answer,
+            "entropy_before": h_before,
+            "entropy_after": h_after,
+            "information_gain": info_gain,
+        }
+    )
+    orch.question_count += 1
+
+    # Save updated state
+    save_session_state(args.session_id, orch)
+
+    # Output results
+    print(
+        json.dumps(
+            {
+                "status": "updated",
+                "dimension": args.dimension,
+                "entropy_before": round(h_before, 4),
+                "entropy_after": round(h_after, 4),
+                "information_gain": round(info_gain, 4),
+                "question_count": orch.question_count,
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+def main() -> None:
+    """CLI entry point."""
+    parser = argparse.ArgumentParser(description="Good Question session management CLI")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # init command
+    subparsers.add_parser("init", help="Initialize new session")
+
+    # next-question command
+    next_parser = subparsers.add_parser("next-question", help="Get next question")
+    next_parser.add_argument("--session-id", required=True, help="Session ID")
+
+    # status command
+    status_parser = subparsers.add_parser("status", help="Display session state")
+    status_parser.add_argument("--session-id", required=True, help="Session ID")
+
+    # complete command
+    complete_parser = subparsers.add_parser("complete", help="Complete session")
+    complete_parser.add_argument("--session-id", required=True, help="Session ID")
+
+    # evaluate-question command
+    eval_parser = subparsers.add_parser(
+        "evaluate-question",
+        help="Output question evaluation formulas and data for LLM calculation",
+    )
+    eval_parser.add_argument("--session-id", required=True, help="Session ID")
+    eval_parser.add_argument("--dimension", required=True, help="Dimension ID")
+    eval_parser.add_argument("--question", required=True, help="Question to evaluate")
+
+    # update-with-computation command
+    update_comp_parser = subparsers.add_parser(
+        "update-with-computation",
+        help="Update beliefs with complete computation chain (Phase B + C)",
+    )
+    update_comp_parser.add_argument("--session-id", required=True, help="Session ID")
+    update_comp_parser.add_argument("--dimension", required=True, help="Dimension ID")
+    update_comp_parser.add_argument("--question", required=True, help="Question asked")
+    update_comp_parser.add_argument("--answer", required=True, help="User's answer")
+    update_comp_parser.add_argument(
+        "--likelihoods",
+        type=str,
+        required=True,
+        help="Likelihoods as JSON: '{\"hyp1\": 0.5, ...}'",
+    )
+
+    args = parser.parse_args()
+
+    # Dispatch to command handler
+    if args.command == "init":
+        cmd_init(args)
+    elif args.command == "next-question":
+        cmd_next_question(args)
+    elif args.command == "status":
+        cmd_status(args)
+    elif args.command == "complete":
+        cmd_complete(args)
+    elif args.command == "evaluate-question":
+        cmd_evaluate_question(args)
+    elif args.command == "update-with-computation":
+        cmd_update_with_computation(args)
+
+
+if __name__ == "__main__":
+    main()

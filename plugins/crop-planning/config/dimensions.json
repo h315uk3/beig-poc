@@ -1,0 +1,108 @@
+{
+  "dimensions": {
+    "purpose": {
+      "id": "purpose",
+      "name": "Farming Purpose",
+      "short_name": "Why",
+      "description": "Primary goal and motivation for farming",
+      "importance": 1.0,
+      "prerequisites": [],
+      "convergence_threshold": 0.3,
+      "focus_areas": ["income goals", "food security", "lifestyle", "market opportunity", "sustainability"],
+      "hypotheses": {
+        "commercial": {"id": "commercial", "name": "Commercial", "description": "Profit-focused farming for market sale", "focus_areas": ["market demand", "profit margins", "scale production", "business operations", "sales channels"]},
+        "subsistence": {"id": "subsistence", "name": "Subsistence", "description": "Growing food for family consumption", "focus_areas": ["family needs", "food security", "self-sufficiency", "nutrition", "preservation"]},
+        "hobby": {"id": "hobby", "name": "Hobby/Recreation", "description": "Farming for enjoyment and learning", "focus_areas": ["enjoyment", "experimentation", "education", "relaxation", "small scale"]},
+        "mixed": {"id": "mixed", "name": "Mixed Purpose", "description": "Combination of commercial and personal use", "focus_areas": ["partial income", "family use", "local sales", "balanced approach", "flexibility"]}
+      }
+    },
+    "environment": {
+      "id": "environment",
+      "name": "Growing Environment",
+      "short_name": "Where",
+      "description": "Climate, soil, and natural conditions",
+      "importance": 0.9,
+      "prerequisites": ["purpose"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": ["climate zone", "soil type", "water availability", "sunlight", "topography"],
+      "hypotheses": {
+        "temperate": {"id": "temperate", "name": "Temperate", "description": "Four seasons, moderate climate", "focus_areas": ["seasonal crops", "frost dates", "rainfall", "winter dormancy", "season extension"]},
+        "tropical": {"id": "tropical", "name": "Tropical", "description": "Warm year-round, high humidity", "focus_areas": ["year-round growing", "pest pressure", "monsoons", "heat stress", "tropical crops"]},
+        "arid": {"id": "arid", "name": "Arid/Semi-Arid", "description": "Low rainfall, water constraints", "focus_areas": ["drought tolerance", "irrigation", "water conservation", "soil salinity", "desert crops"]},
+        "controlled": {"id": "controlled", "name": "Controlled Environment", "description": "Greenhouse or indoor farming", "focus_areas": ["climate control", "artificial lighting", "hydro/aquaponics", "year-round production", "intensive methods"]}
+      }
+    },
+    "resources": {
+      "id": "resources",
+      "name": "Available Resources",
+      "short_name": "What",
+      "description": "Land, capital, labor, and infrastructure",
+      "importance": 0.8,
+      "supports_multi_select": true,
+      "prerequisites": ["purpose"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": ["land size", "capital", "labor", "equipment", "infrastructure"],
+      "hypotheses": {
+        "capital_intensive": {"id": "capital_intensive", "name": "Capital Intensive", "description": "High investment, mechanized operations", "focus_areas": ["machinery", "automation", "large scale", "infrastructure", "technology"]},
+        "labor_intensive": {"id": "labor_intensive", "name": "Labor Intensive", "description": "Limited capital, more manual work", "focus_areas": ["hand tools", "family labor", "traditional methods", "intensive cultivation", "small scale"]},
+        "land_rich": {"id": "land_rich", "name": "Land Rich", "description": "Large acreage available", "focus_areas": ["extensive farming", "crop rotation", "pasture", "diverse enterprises", "mechanization"]},
+        "limited_space": {"id": "limited_space", "name": "Limited Space", "description": "Small plot or urban setting", "focus_areas": ["intensive methods", "vertical growing", "container farming", "high value crops", "efficiency"]}
+      }
+    },
+    "constraints": {
+      "id": "constraints",
+      "name": "Constraints & Challenges",
+      "short_name": "Limits",
+      "description": "Regulatory, market, and practical limitations",
+      "importance": 0.7,
+      "supports_multi_select": true,
+      "prerequisites": ["environment", "resources"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": ["regulations", "market access", "pest pressure", "time commitment", "knowledge gaps"],
+      "hypotheses": {
+        "regulated": {"id": "regulated", "name": "Heavily Regulated", "description": "Organic certification, permits, zoning", "focus_areas": ["certification", "compliance", "documentation", "inspections", "standards"]},
+        "market_limited": {"id": "market_limited", "name": "Market Limited", "description": "Limited buyers or distribution", "focus_areas": ["transportation", "storage", "buyers", "price volatility", "competition"]},
+        "knowledge": {"id": "knowledge", "name": "Knowledge Gap", "description": "New to farming, need learning", "focus_areas": ["education", "mentorship", "training", "experimentation", "mistakes"]},
+        "time": {"id": "time", "name": "Time Constrained", "description": "Part-time or seasonal availability", "focus_areas": ["scheduling", "labor peaks", "off-farm work", "automation", "low maintenance crops"]}
+      }
+    },
+    "goals": {
+      "id": "goals",
+      "name": "Success Metrics",
+      "short_name": "Success",
+      "description": "What defines success for this farming operation",
+      "importance": 0.6,
+      "prerequisites": ["purpose", "resources"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": ["yield targets", "income goals", "sustainability", "quality", "lifestyle balance"],
+      "hypotheses": {
+        "profit": {"id": "profit", "name": "Profit Maximization", "description": "Focus on financial returns", "focus_areas": ["revenue", "cost efficiency", "market prices", "scale", "margins"]},
+        "sustainability": {"id": "sustainability", "name": "Sustainability", "description": "Environmental and long-term viability", "focus_areas": ["soil health", "biodiversity", "ecosystem", "regenerative", "organic"]},
+        "quality": {"id": "quality", "name": "Quality Focus", "description": "Premium products, craftsmanship", "focus_areas": ["flavor", "nutrition", "artisanal", "reputation", "niche markets"]},
+        "lifestyle": {"id": "lifestyle", "name": "Lifestyle Balance", "description": "Work-life balance, enjoyment", "focus_areas": ["flexibility", "enjoyment", "health", "community", "fulfillment"]}
+      }
+    }
+  },
+  "dag": {
+    "nodes": ["purpose", "environment", "resources", "constraints", "goals"],
+    "edges": [
+      {"from": "purpose", "to": "environment"},
+      {"from": "purpose", "to": "resources"},
+      {"from": "environment", "to": "constraints"},
+      {"from": "resources", "to": "constraints"},
+      {"from": "purpose", "to": "goals"},
+      {"from": "resources", "to": "goals"}
+    ]
+  },
+  "session_config": {
+    "initial_entropy": 2.0,
+    "convergence_threshold": 0.3,
+    "max_questions": 20,
+    "min_questions": 5,
+    "priority_order": ["purpose", "environment", "resources", "constraints", "goals"]
+  }
+}

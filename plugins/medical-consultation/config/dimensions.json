@@ -1,0 +1,237 @@
+{
+  "dimensions": {
+    "symptoms": {
+      "id": "symptoms",
+      "name": "Symptoms",
+      "short_name": "What",
+      "description": "Current symptoms and health concerns",
+      "importance": 1.0,
+      "prerequisites": [],
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "location of discomfort",
+        "type of symptoms",
+        "duration and onset",
+        "intensity level",
+        "accompanying symptoms"
+      ],
+      "hypotheses": {
+        "acute": {
+          "id": "acute",
+          "name": "Acute Condition",
+          "description": "Sudden onset, severe symptoms requiring immediate attention",
+          "focus_areas": ["sudden onset", "severe pain", "high fever", "breathing difficulty", "loss of consciousness"]
+        },
+        "chronic": {
+          "id": "chronic",
+          "name": "Chronic Issue",
+          "description": "Long-standing condition, recurring symptoms",
+          "focus_areas": ["recurring pattern", "gradual worsening", "persistent discomfort", "lifestyle impact", "ongoing management"]
+        },
+        "minor": {
+          "id": "minor",
+          "name": "Minor Ailment",
+          "description": "Mild symptoms, likely self-limiting",
+          "focus_areas": ["mild discomfort", "recent onset", "no fever", "manageable pain", "daily function maintained"]
+        },
+        "preventive": {
+          "id": "preventive",
+          "name": "Preventive Care",
+          "description": "No current symptoms, seeking prevention or checkup",
+          "focus_areas": ["routine checkup", "health screening", "vaccination", "risk assessment", "wellness maintenance"]
+        }
+      }
+    },
+    "severity": {
+      "id": "severity",
+      "name": "Severity & Urgency",
+      "short_name": "When",
+      "description": "How urgent is medical attention needed",
+      "importance": 0.9,
+      "prerequisites": ["symptoms"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "pain level",
+        "functional impact",
+        "progression rate",
+        "safety concerns",
+        "time sensitivity"
+      ],
+      "hypotheses": {
+        "emergency": {
+          "id": "emergency",
+          "name": "Emergency",
+          "description": "Life-threatening, needs immediate ER visit",
+          "focus_areas": ["severe pain", "breathing problems", "chest pain", "loss of consciousness", "severe bleeding"]
+        },
+        "urgent": {
+          "id": "urgent",
+          "name": "Urgent",
+          "description": "Needs attention within 24 hours",
+          "focus_areas": ["high fever", "moderate pain", "infection signs", "rapid worsening", "significant discomfort"]
+        },
+        "routine": {
+          "id": "routine",
+          "name": "Routine",
+          "description": "Can wait for regular appointment",
+          "focus_areas": ["manageable symptoms", "stable condition", "follow-up needed", "non-urgent", "scheduled care"]
+        },
+        "elective": {
+          "id": "elective",
+          "name": "Elective",
+          "description": "Optional, can be planned at convenience",
+          "focus_areas": ["no active symptoms", "preventive care", "cosmetic concerns", "quality of life", "long-term planning"]
+        }
+      }
+    },
+    "history": {
+      "id": "history",
+      "name": "Medical History",
+      "short_name": "History",
+      "description": "Relevant medical background and risk factors",
+      "importance": 0.8,
+      "supports_multi_select": true,
+      "prerequisites": ["symptoms"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "chronic conditions",
+        "allergies",
+        "medications",
+        "past surgeries",
+        "family history"
+      ],
+      "hypotheses": {
+        "complex": {
+          "id": "complex",
+          "name": "Complex History",
+          "description": "Multiple conditions, medications, or risk factors",
+          "focus_areas": ["multiple conditions", "many medications", "surgical history", "genetic risks", "specialist care"]
+        },
+        "specific": {
+          "id": "specific",
+          "name": "Specific Condition",
+          "description": "One known condition requiring management",
+          "focus_areas": ["single diagnosis", "ongoing treatment", "regular monitoring", "known triggers", "established care"]
+        },
+        "allergies": {
+          "id": "allergies",
+          "name": "Allergy Concerns",
+          "description": "Drug allergies or sensitivities affecting treatment",
+          "focus_areas": ["medication allergies", "sensitivity", "adverse reactions", "alternative treatments", "safety precautions"]
+        },
+        "healthy": {
+          "id": "healthy",
+          "name": "Generally Healthy",
+          "description": "No significant medical history or conditions",
+          "focus_areas": ["no chronic conditions", "no regular medications", "good health", "minimal history", "preventive focus"]
+        }
+      }
+    },
+    "preferences": {
+      "id": "preferences",
+      "name": "Healthcare Preferences",
+      "short_name": "How",
+      "description": "Preferred approach to healthcare and treatment",
+      "importance": 0.7,
+      "prerequisites": ["severity"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "treatment philosophy",
+        "provider type",
+        "care setting",
+        "communication style",
+        "involvement level"
+      ],
+      "hypotheses": {
+        "conventional": {
+          "id": "conventional",
+          "name": "Conventional Medicine",
+          "description": "Prefer established medical treatments and hospitals",
+          "focus_areas": ["evidence-based", "hospital care", "prescription medications", "specialist referrals", "standard protocols"]
+        },
+        "holistic": {
+          "id": "holistic",
+          "name": "Holistic Approach",
+          "description": "Integrate alternative and complementary therapies",
+          "focus_areas": ["whole person care", "natural remedies", "lifestyle changes", "alternative medicine", "integrative approach"]
+        },
+        "convenient": {
+          "id": "convenient",
+          "name": "Convenience Focused",
+          "description": "Prioritize accessibility and quick service",
+          "focus_areas": ["telemedicine", "urgent care", "walk-in clinics", "online consultations", "minimal waiting"]
+        },
+        "continuity": {
+          "id": "continuity",
+          "name": "Continuity of Care",
+          "description": "Long-term relationship with primary care provider",
+          "focus_areas": ["family doctor", "personal relationship", "comprehensive care", "preventive focus", "coordinated treatment"]
+        }
+      }
+    },
+    "constraints": {
+      "id": "constraints",
+      "name": "Practical Constraints",
+      "short_name": "Limits",
+      "description": "Logistical and financial considerations",
+      "importance": 0.6,
+      "supports_multi_select": true,
+      "prerequisites": ["severity", "preferences"],
+      "prerequisite_threshold": 1.5,
+      "convergence_threshold": 0.3,
+      "focus_areas": [
+        "insurance coverage",
+        "cost concerns",
+        "location accessibility",
+        "time availability",
+        "transportation"
+      ],
+      "hypotheses": {
+        "insured": {
+          "id": "insured",
+          "name": "Insurance Coverage",
+          "description": "Have health insurance, prefer in-network providers",
+          "focus_areas": ["insurance accepted", "in-network", "covered services", "copay concerns", "authorization process"]
+        },
+        "cost_sensitive": {
+          "id": "cost_sensitive",
+          "name": "Cost Sensitive",
+          "description": "Limited budget, need affordable options",
+          "focus_areas": ["low cost", "payment plans", "community clinics", "generic medications", "financial assistance"]
+        },
+        "time_limited": {
+          "id": "time_limited",
+          "name": "Time Limited",
+          "description": "Busy schedule, need quick appointments",
+          "focus_areas": ["short wait times", "flexible hours", "evening appointments", "quick service", "telemedicine"]
+        },
+        "location_bound": {
+          "id": "location_bound",
+          "name": "Location Bound",
+          "description": "Limited transportation, need nearby care",
+          "focus_areas": ["close proximity", "public transit", "home visits", "local clinics", "accessibility"]
+        }
+      }
+    }
+  },
+  "dag": {
+    "nodes": ["symptoms", "severity", "history", "preferences", "constraints"],
+    "edges": [
+      {"from": "symptoms", "to": "severity"},
+      {"from": "symptoms", "to": "history"},
+      {"from": "severity", "to": "preferences"},
+      {"from": "severity", "to": "constraints"},
+      {"from": "preferences", "to": "constraints"}
+    ]
+  },
+  "session_config": {
+    "initial_entropy": 2.0,
+    "convergence_threshold": 0.3,
+    "max_questions": 15,
+    "min_questions": 5,
+    "priority_order": ["symptoms", "severity", "history", "preferences", "constraints"]
+  }
+}

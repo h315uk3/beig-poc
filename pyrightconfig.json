@@ -1,6 +1,7 @@
 {
   "include": [
-    "src",
+    "plugins/as-you/as_you",
+    "plugins/with-me/with_me",
     "tests"
   ],
   "exclude": [
@@ -14,7 +15,8 @@
     "**/build"
   ],
   "extraPaths": [
-    "src"
+    "plugins/as-you",
+    "plugins/with-me"
   ],
   "typeCheckingMode": "standard",
   "pythonVersion": "3.11",

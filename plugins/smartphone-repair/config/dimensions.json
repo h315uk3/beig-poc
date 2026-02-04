@@ -1,0 +1,62 @@
+{
+  "dimensions": {
+    "problem": {"id": "problem", "name": "Problem Type", "short_name": "Problem", "description": "What's wrong with the phone", "importance": 1.0, "prerequisites": [], "convergence_threshold": 0.3, "focus_areas": ["symptoms", "damage type", "functionality impact", "onset", "reproducibility"],
+      "hypotheses": {
+        "physical": {"id": "physical", "name": "Physical Damage", "description": "Cracked screen, broken parts, water damage", "focus_areas": ["screen crack", "broken button", "water damage", "dents", "physical impact"]},
+        "battery": {"id": "battery", "name": "Battery Issues", "description": "Won't charge, drains fast, overheating", "focus_areas": ["charging problem", "fast drain", "swelling", "overheating", "age"]},
+        "software": {"id": "software", "name": "Software Issues", "description": "Crashes, freezing, slow performance", "focus_areas": ["app crashes", "freezing", "boot loop", "slow", "bugs"]},
+        "hardware": {"id": "hardware", "name": "Hardware Malfunction", "description": "Camera, speaker, mic, sensors not working", "focus_areas": ["camera failure", "no sound", "mic issue", "sensor problem", "connectivity"]}
+      }
+    },
+    "urgency": {"id": "urgency", "name": "Urgency & Impact", "short_name": "Urgency", "description": "How urgently you need the phone working", "importance": 0.9, "prerequisites": ["problem"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["time sensitivity", "backup device", "work dependency", "data access", "tolerance"],
+      "hypotheses": {
+        "critical": {"id": "critical", "name": "Critical", "description": "Need it today, no backup", "focus_areas": ["work phone", "no backup", "urgent", "same day", "essential"]},
+        "important": {"id": "important", "name": "Important", "description": "Need within a few days", "focus_areas": ["primary phone", "temporary solution", "days wait", "inconvenient", "workaround exists"]},
+        "flexible": {"id": "flexible", "name": "Flexible", "description": "Can wait, have alternatives", "focus_areas": ["backup device", "can wait", "weeks ok", "not urgent", "secondary phone"]},
+        "considering_replacement": {"id": "considering_replacement", "name": "Considering Replacement", "description": "Might just buy new phone", "focus_areas": ["old phone", "upgrade time", "cost comparison", "new features", "trade-in"]}
+      }
+    },
+    "device_info": {"id": "device_info", "name": "Device Information", "short_name": "Device", "description": "Age, model, warranty status", "importance": 0.8, "prerequisites": ["problem"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["model", "age", "warranty", "value", "availability"],
+      "hypotheses": {
+        "new_warranty": {"id": "new_warranty", "name": "New Under Warranty", "description": "Recent purchase, manufacturer warranty active", "focus_areas": ["warranty coverage", "free repair", "authorized service", "replacement option", "recent model"]},
+        "recent_out": {"id": "recent_out", "name": "Recent Out of Warranty", "description": "1-2 years old, worth repairing", "focus_areas": ["recent model", "good condition", "worth fixing", "parts available", "resale value"]},
+        "older": {"id": "older", "name": "Older Model", "description": "3+ years, repair vs replace decision", "focus_areas": ["aging device", "parts scarce", "cost comparison", "outdated", "legacy"]},
+        "insurance": {"id": "insurance", "name": "Has Insurance", "description": "Device insurance or protection plan", "focus_areas": ["insurance claim", "deductible", "coverage", "replacement", "claim process"]}
+      }
+    },
+    "constraints": {"id": "constraints", "name": "Constraints", "short_name": "Limits", "description": "Budget, time, data considerations", "importance": 0.7, "supports_multi_select": true, "prerequisites": ["urgency", "device_info"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["budget", "time", "data backup", "location", "downtime"],
+      "hypotheses": {
+        "budget_limited": {"id": "budget_limited", "name": "Budget Limited", "description": "Repair cost is major concern", "focus_areas": ["low cost", "DIY option", "third party", "used parts", "affordability"]},
+        "data_critical": {"id": "data_critical", "name": "Data Critical", "description": "Must preserve data on device", "focus_areas": ["no backup", "data recovery", "photos", "messages", "irreplaceable"]},
+        "time_sensitive": {"id": "time_sensitive", "name": "Time Sensitive", "description": "Need quick turnaround", "focus_areas": ["same day", "while you wait", "express service", "loaner phone", "fast"]},
+        "location_limited": {"id": "location_limited", "name": "Location Limited", "description": "Limited repair options nearby", "focus_areas": ["few shops", "mail-in service", "travel distance", "rural", "accessibility"]}
+      }
+    },
+    "preferences": {"id": "preferences", "name": "Repair Preferences", "short_name": "How", "description": "Preferred repair approach", "importance": 0.6, "prerequisites": ["device_info", "constraints"], "prerequisite_threshold": 1.5, "convergence_threshold": 0.3, "focus_areas": ["service type", "warranty impact", "quality", "trust", "expertise"],
+      "hypotheses": {
+        "authorized": {"id": "authorized", "name": "Authorized Service", "description": "Official manufacturer repair", "focus_areas": ["warranty safe", "OEM parts", "certified", "reliable", "premium price"]},
+        "third_party": {"id": "third_party", "name": "Third Party Shop", "description": "Independent repair shop", "focus_areas": ["lower cost", "faster", "convenient", "varies quality", "voids warranty"]},
+        "diy": {"id": "diy", "name": "DIY Repair", "description": "Self-repair with kit", "focus_areas": ["cheapest", "control", "learning", "risk", "toolkit needed"]},
+        "mail_in": {"id": "mail_in", "name": "Mail-In Service", "description": "Ship device for repair", "focus_areas": ["convenience", "reputation", "turnaround time", "shipping risk", "broader options"]}
+      }
+    }
+  },
+  "dag": {
+    "nodes": ["problem", "urgency", "device_info", "constraints", "preferences"],
+    "edges": [
+      {"from": "problem", "to": "urgency"},
+      {"from": "problem", "to": "device_info"},
+      {"from": "urgency", "to": "constraints"},
+      {"from": "device_info", "to": "constraints"},
+      {"from": "device_info", "to": "preferences"},
+      {"from": "constraints", "to": "preferences"}
+    ]
+  },
+  "session_config": {
+    "initial_entropy": 2.0,
+    "convergence_threshold": 0.3,
+    "max_questions": 15,
+    "min_questions": 5,
+    "priority_order": ["problem", "urgency", "device_info", "constraints", "preferences"]
+  }
+}
